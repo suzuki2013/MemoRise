@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemoRise - カレンダー</title>
+    <link rel="stylesheet" href="calendar_css.css" type="text/css">
+</head>
+<body>
+
+<div class="container">
+    <!-- ヘッダー -->
+    <div class="top-bar">
+        <div class="month-display" id="monthDisplay"></div>
+        <div class="nav-actions">
+            <button class="btn" onclick="changeMonth(-1)">◀ 前月</button>
+            <button class="btn btn-today" onclick="goToday()">今日</button>
+            <button class="btn" onclick="changeMonth(1)">次月 ▶</button>
+        </div>
+    </div>
+
+    <!-- 曜日ヘッダー -->
+    <div class="weekdays">
+        <div class="weekday sun">日</div>
+        <div class="weekday">月</div>
+        <div class="weekday">火</div>
+        <div class="weekday">水</div>
+        <div class="weekday">木</div>
+        <div class="weekday">金</div>
+        <div class="weekday sat">土</div>
+    </div>
+
+    <!-- カレンダー本体 -->
+    <div class="days-grid" id="daysGrid"></div>
+
+    <!-- メモ＆学習記録エリア -->
+    <div class="memo-section">
+        <div class="memo-header">
+            <span>📅 <span class="memo-date" id="selectedDateText">日付を選択してください</span></span>
+            <button class="study-toggle-btn" id="studyBtn" onclick="toggleStudy()" disabled>
+                ✏️ 勉強した！
+            </button>
+        </div>
+        <textarea class="memo-textarea" id="memoText" placeholder="学習内容やメモを入力..." disabled></textarea>
+        <div class="memo-actions">
+            <button class="delete-btn" id="deleteBtn" onclick="deleteMemo()" disabled>削除</button>
+            <button class="save-btn" id="saveBtn" onclick="saveMemo()" disabled>保存する</button>
+        </div>
+    </div>
+
+    <!-- 画面最下部に固定配置 -->
+<div class="app-switcher">
+    <a href="flashcard.html" class="nav-tab">📖 単語帳</a>
+    <a href="calendar.html" class="nav-tab active">📅 カレンダー</a>
+</div>
+</div>
+
+<script>
+    let currentDate = new Date();
+    let selectedDateStr = "";
+    let memos = {};
+    let studyLogs = {};
+
+    function loadData() {
+        const savedMemos = localStorage.getItem('memocalendar_notes');
+        if (savedMemos) {
+            try { memos = JSON.parse(savedMemos); } catch (e) { memos = {}; }
+        }
+        const savedStudies = localStorage.getItem('memocalendar_studies');
+        if (savedStudies) {
+            try { studyLogs = JSON.parse(savedStudies); } catch (e) { studyLogs = {}; }
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem('memocalendar_notes', JSON.stringify(memos));
+        localStorage.setItem('memocalendar_studies', JSON.stringify(studyLogs));
+    }
+
+    function renderCalendar() {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+
+        document.getElementById('monthDisplay').textContent = `${year}年 ${month + 1}月`;
+
+        const grid = document.getElementById('daysGrid');
+        grid.innerHTML = '';
+
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        
+        const firstDayIndex = firstDay.getDay();
+        const totalDays = lastDay.getDate();
+
+        // 前月の日付埋め
+        const prevLastDay = new Date(year, month, 0).getDate();
+        for (let i = firstDayIndex; i > 0; i--) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day-cell other-month';
+            dayDiv.textContent = prevLastDay - i + 1;
+            grid.appendChild(dayDiv);
+        }
+
+        // 今月の日付を描画
+        const today = new Date();
+        for (let day = 1; day <= totalDays; day++) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day-cell';
+            dayDiv.textContent = day;
+
+            const dayOfWeek = new Date(year, month, day).getDay();
+            if (dayOfWeek === 0) dayDiv.classList.add('sun');
+            if (dayOfWeek === 6) dayDiv.classList.add('sat');
+
+            if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+                dayDiv.classList.add('today');
+            }
+
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
+            if (dateStr === selectedDateStr) {
+                dayDiv.classList.add('selected');
+            }
+
+            // 勉強した日のマーク表示
+            if (studyLogs[dateStr]) {
+                dayDiv.classList.add('studied');
+                const badge = document.createElement('span');
+                badge.className = 'studied-icon';
+                badge.textContent = '✅';
+                dayDiv.appendChild(badge);
+            }
+
+            // メモが存在する場合のドット表示
+            if (memos[dateStr] && memos[dateStr].trim() !== '') {
+                const dot = document.createElement('div');
+                dot.className = 'memo-dot';
+                dayDiv.appendChild(dot);
+            }
+
+            dayDiv.onclick = () => selectDate(dateStr, dayDiv);
+
+            grid.appendChild(dayDiv);
+        }
+
+        // 来月のマス埋め
+        const totalCells = firstDayIndex + totalDays;
+        const nextDays = (totalCells > 35 ? 42 : 35) - totalCells;
+        for (let i = 1; i <= nextDays; i++) {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day-cell other-month';
+            dayDiv.textContent = i;
+            grid.appendChild(dayDiv);
+        }
+    }
+
+    function selectDate(dateStr, element) {
+        selectedDateStr = dateStr;
+
+        document.querySelectorAll('.day-cell').forEach(cell => cell.classList.remove('selected'));
+        if (element) element.classList.add('selected');
+
+        const [y, m, d] = dateStr.split('-');
+        document.getElementById('selectedDateText').textContent = `${y}年${parseInt(m,10)}月${parseInt(d,10)}日`;
+        
+        const memoArea = document.getElementById('memoText');
+        const saveBtn = document.getElementById('saveBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const studyBtn = document.getElementById('studyBtn');
+
+        memoArea.disabled = false;
+        saveBtn.disabled = false;
+        deleteBtn.disabled = false;
+        studyBtn.disabled = false;
+
+        memoArea.value = memos[dateStr] || '';
+        
+        // 勉強ボタンの状態更新
+        if (studyLogs[dateStr]) {
+            studyBtn.classList.add('is-studied');
+            studyBtn.textContent = '✅ 勉強完了！';
+        } else {
+            studyBtn.classList.remove('is-studied');
+            studyBtn.textContent = '✏️ 勉強した！';
+        }
+    }
+
+    function toggleStudy() {
+        if (!selectedDateStr) return;
+        
+        studyLogs[selectedDateStr] = !studyLogs[selectedDateStr];
+        if (!studyLogs[selectedDateStr]) {
+            delete studyLogs[selectedDateStr];
+        }
+
+        saveData();
+        renderCalendar();
+
+        // ボタン表示の即時更新
+        const studyBtn = document.getElementById('studyBtn');
+        if (studyLogs[selectedDateStr]) {
+            studyBtn.classList.add('is-studied');
+            studyBtn.textContent = '✅ 勉強完了！';
+        } else {
+            studyBtn.classList.remove('is-studied');
+            studyBtn.textContent = '✏️ 勉強した！';
+        }
+    }
+
+    function saveMemo() {
+        if (!selectedDateStr) return;
+        const text = document.getElementById('memoText').value;
+        
+        if (text.trim() === '') {
+            delete memos[selectedDateStr];
+        } else {
+            memos[selectedDateStr] = text;
+        }
+
+        saveData();
+        renderCalendar();
+    }
+
+    function deleteMemo() {
+        if (!selectedDateStr) return;
+        delete memos[selectedDateStr];
+        document.getElementById('memoText').value = '';
+        saveData();
+        renderCalendar();
+    }
+
+    function changeMonth(delta) {
+        currentDate.setMonth(currentDate.getMonth() + delta);
+        renderCalendar();
+    }
+
+    function goToday() {
+        currentDate = new Date();
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        renderCalendar();
+        
+        const todayCell = Array.from(document.querySelectorAll('.day-cell:not(.other-month)'))
+            .find(el => el.textContent == today.getDate());
+        if (todayCell) {
+            selectDate(todayStr, todayCell);
+        }
+    }
+
+    loadData();
+    renderCalendar();
+</script>
+
+</body>
+</html>
