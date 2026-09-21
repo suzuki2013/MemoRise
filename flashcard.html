@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>MemoRise</title>
+    <link rel="icon" href="favicon.png" type="image/png">
+    <style>
+        body {
+            font-family: 'Segoe UI', "Meiryo", sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 35px 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            width: 560px; /* 横幅を拡張 */
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .card {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin-bottom: 25px;
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+            user-select: none;
+            padding: 0 25px;
+        }
+        .card:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+        }
+        .card-type {
+            font-size: 13px;
+            font-weight: bold;
+            color: #888;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .word {
+            font-size: 36px;
+            font-weight: bold;
+            color: #2d3748;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+        .translation {
+            color: #0066cc;
+            font-size: 30px;
+        }
+        .sub-text {
+            font-size: 13px;
+            color: #a0aec0;
+            margin-top: 18px;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        button {
+            padding: 10px 22px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #e2e8f0;
+            color: #a0aec0;
+            cursor: not-allowed;
+        }
+        .progress {
+            font-size: 15px;
+            font-weight: bold;
+            color: #4a5568;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card" id="card" onclick="flipCard()">
+        <div class="card-type" id="cardType">英語</div>
+        <div class="word" id="displayWord"></div>
+        <div class="sub-text" id="subText">クリックして日本語訳を表示</div>
+    </div>
+
+    <div class="controls">
+        <button id="prevBtn" onclick="prevWord()">前へ</button>
+        <button id="audioBtn" onclick="playAudio()">🔊 発音</button>
+        <span class="progress" id="progress">1 / 99</span>
+        <button id="nextBtn" onclick="nextWord()">次へ</button>
+    </div>
+</div>
+
+<script>
+    const wordList = [
+        { en: "form", ja: "組織する、形作る" },
+        { en: "cancel", ja: "取り消す、キャンセルする" },
+        { en: "relax", ja: "くつろぐ、リラックスする" },
+        { en: "add", ja: "加える、追加する" },
+        { en: "contact", ja: "連絡する" },
+        { en: "purchase", ja: "購入する" },
+        { en: "expect", ja: "予期する、期待する" },
+        { en: "continue", ja: "続ける" },
+        { en: "require", ja: "必要とする" },
+        { en: "replace", ja: "取って代わる、交換する" },
+        { en: "suffer", ja: "苦しむ、損害を受ける" },
+        { en: "fix", ja: "修理する、固定する" },
+        { en: "serve", ja: "仕える、役立つ、給仕する" },
+        { en: "include", ja: "含む" },
+        { en: "attend", ja: "出席する" },
+        { en: "quit", ja: "やめる" },
+        { en: "prefer", ja: "～を好む" },
+        { en: "recycle", ja: "再利用する、リサイクルする" },
+        { en: "face", ja: "直面する、顔" },
+        { en: "invent", ja: "発明する" },
+        { en: "prevent", ja: "防ぐ、妨げる" },
+        { en: "decreace", ja: "減少する" },
+        { en: "attach", ja: "取り付ける、添付する" },
+        { en: "shape", ja: "形作る、形" },
+        { en: "fill", ja: "満たす" },
+        { en: "exchange", ja: "交換する" },
+        { en: "realize", ja: "実現する、理解する" },
+        { en: "lower", ja: "下げる、低くする" },
+        { en: "guess", ja: "推測する" },
+        { en: "gain", ja: "得る、増す" },
+        { en: "suit", ja: "適する、似合う" },
+        { en: "land", ja: "着陸する、土地" },
+        { en: "award", ja: "賞、授与する" },
+        { en: "statement", ja: "声明、記述" },
+        { en: "insect", ja: "昆虫" },
+        { en: "department", ja: "部署、部門" },
+        { en: "membership", ja: "会員資格" },
+        { en: "fat", ja: "脂肪、太った" },
+        { en: "sentence", ja: "文、判決" },
+        { en: "community", ja: "地域社会、コミュニティ" },
+        { en: "instrument", ja: "器具、楽器" },
+        { en: "focus", ja: "焦点、集中させる" },
+        { en: "client", ja: "顧客、クライアント" },
+        { en: "bacteria", ja: "細菌、バクテリア" },
+        { en: "retirement", ja: "退職、引退" },
+        { en: "nature", ja: "自然、性質" },
+        { en: "earth", ja: "地球、陸地" },
+        { en: "grocery", ja: "食料雑貨" },
+        { en: "trash", ja: "ゴミ" },
+        { en: "method", ja: "方法、手法" },
+        { en: "site", ja: "敷地、場所、ウェブサイト" },
+        { en: "tablet", ja: "錠剤、タブレット" },
+        { en: "organization", ja: "組織、団体" },
+        { en: "treatment", ja: "治療、取り扱い" },
+        { en: "farming", ja: "農業" },
+        { en: "case", ja: "場合、ケース、事件" },
+        { en: "announcement", ja: "発表、告知" },
+        { en: "author", ja: "著者、作者" },
+        { en: "biology", ja: "生物学" },
+        { en: "advertisement", ja: "広告" },
+        { en: "account", ja: "口座、説明、アカウント" },
+        { en: "data", ja: "データ、資料" },
+        { en: "solution", ja: "解決策、溶液" },
+        { en: "harm", ja: "害、損害" },
+        { en: "competition", ja: "競争、競技会" },
+        { en: "industry", ja: "産業、工業" },
+        { en: "participant", ja: "参加者" },
+        { en: "charity", ja: "慈善団体、チャリティ" },
+        { en: "medicine", ja: "薬、医学" },
+        { en: "opinion", ja: "意見、見解" },
+        { en: "payment", ja: "支払い" },
+        { en: "population", ja: "人口" },
+        { en: "access", ja: "利用権、アクセス" },
+        { en: "generation", ja: "世代" },
+        { en: "resident", ja: "住民、居住者" },
+        { en: "quality", ja: "質、品質" },
+        { en: "distance", ja: "距離" },
+        { en: "variety", ja: "多様性、種類" },
+        { en: "career", ja: "経歴、キャリア" },
+        { en: "item", ja: "品目、アイテム" },
+        { en: "view", ja: "眺め、見解、見る" },
+        { en: "present", ja: "現在の、出席して、贈り物" },
+        { en: "recent", ja: "最近の" },
+        { en: "available", ja: "利用可能な、入手できる" },
+        { en: "extra", ja: "追加の、余分の" },
+        { en: "successful", ja: "成功した" },
+        { en: "nearby", ja: "近くの" },
+        { en: "certain", ja: "確信して、ある～" },
+        { en: "similar", ja: "似ている、同様の" },
+        { en: "various", ja: "さまざまな、多様な" },
+        { en: "effective", ja: "効果的な" },
+        { en: "huge", ja: "巨大な" },
+        { en: "serious", ja: "深刻な、真剣な" },
+        { en: "social", ja: "社会の、社交的な" },
+        { en: "nowadays", ja: "今日では、近頃は" },
+        { en: "somewhere", ja: "どこかで、どこかに" },
+        { en: "moreover", ja: "そのうえ、さらに" },
+        { en: "sincerely", ja: "敬具、心から" },
+        { en: "rather", ja: "むしろ、かなり" },
+        { en: "originally", ja: "元々は、最初は" }
+    ];
+
+    let currentIndex = 0;
+    let isShowingJapanese = false;
+
+    function updateCard() {
+        const item = wordList[currentIndex];
+        const displayWordEl = document.getElementById('displayWord');
+        const cardTypeEl = document.getElementById('cardType');
+        const subTextEl = document.getElementById('subText');
+
+        if (isShowingJapanese) {
+            cardTypeEl.textContent = "日本語訳";
+            displayWordEl.textContent = item.ja;
+            displayWordEl.classList.add('translation');
+            subTextEl.textContent = "クリックして英単語を表示";
+        } else {
+            cardTypeEl.textContent = "英語";
+            displayWordEl.textContent = item.en;
+            displayWordEl.classList.remove('translation');
+            subTextEl.textContent = "クリックして日本語訳を表示";
+        }
+
+        document.getElementById('progress').textContent = `${currentIndex + 1} / ${wordList.length}`;
+        document.getElementById('prevBtn').disabled = currentIndex === 0;
+        document.getElementById('nextBtn').disabled = currentIndex === wordList.length - 1;
+    }
+
+    function flipCard() {
+        isShowingJapanese = !isShowingJapanese;
+        updateCard();
+    }
+
+    function playAudio(event) {
+        if (event) event.stopPropagation();
+        const currentItem = wordList[currentIndex];
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(currentItem.en);
+        utterance.lang = 'en-US';
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function nextWord() {
+        if (currentIndex < wordList.length - 1) {
+            currentIndex++;
+            isShowingJapanese = false;
+            updateCard();
+        }
+    }
+
+    function prevWord() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            isShowingJapanese = false;
+            updateCard();
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight') nextWord();
+        if (e.key === 'ArrowLeft') prevWord();
+        if (e.key === ' ') {
+            e.preventDefault();
+            flipCard();
+        }
+    });
+
+    updateCard();
+</script>
+
+</body>
+</html>
