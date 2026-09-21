@@ -7,116 +7,264 @@
     <style>
         body {
             font-family: 'Segoe UI', "Meiryo", sans-serif;
-            background-color: #f0f2f5;
+            background-color: #f3f4f6;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
         }
         .container {
-            background: white;
+            background: #ffffff;
             padding: 35px 40px;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-            width: 560px; /* 横幅を拡張 */
+            border-radius: 24px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+            width: 560px;
             text-align: center;
             box-sizing: border-box;
         }
+
+        /* ヘッダー＆タイトル */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .app-title {
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .top-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .shuffle-btn {
+            background-color: #f3f4f6;
+            color: #4b5563;
+            border: none;
+            padding: 7px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .shuffle-btn:hover:not(:disabled) {
+            background-color: #e5e7eb;
+            color: #111827;
+        }
+
+        /* 視覚的なプログレスバー（新機能） */
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background-color: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 22px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            transition: width 0.3s ease;
+        }
+
+        /* カードデザイン */
         .card {
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            height: 220px;
+            border: 2px solid #f3f4f6;
+            border-radius: 20px;
+            height: 230px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             background-color: #ffffff;
-            transition: all 0.2s ease;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
-            padding: 0 25px;
+            padding: 0 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
         }
         .card:hover {
-            border-color: #007bff;
-            box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+            transform: translateY(-2px);
+            border-color: #3b82f6;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.12);
         }
+        /* 日本語訳表示時のカードテーマカラー */
+        .card.is-japanese {
+            background-color: #f0f9ff;
+            border-color: #bae6fd;
+        }
+
         .card-type {
-            font-size: 13px;
-            font-weight: bold;
-            color: #888;
-            margin-bottom: 12px;
+            font-size: 12px;
+            font-weight: 800;
+            color: #3b82f6;
+            background-color: #eff6ff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-bottom: 14px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+        .card.is-japanese .card-type {
+            color: #0284c7;
+            background-color: #e0f2fe;
+        }
         .word {
-            font-size: 36px;
+            font-size: 38px;
             font-weight: bold;
-            color: #2d3748;
+            color: #1f2937;
             word-break: break-word;
             line-height: 1.3;
         }
         .translation {
-            color: #0066cc;
+            color: #0369a1;
             font-size: 30px;
         }
         .sub-text {
             font-size: 13px;
-            color: #a0aec0;
-            margin-top: 18px;
+            color: #9ca3af;
+            margin-top: 16px;
         }
+
+        /* チェックボタン (まだ / 覚えた) */
+        .check-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+        .check-btn {
+            flex: 1;
+            padding: 13px 0;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .bad-btn {
+            background-color: #fef2f2;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+        }
+        .bad-btn:hover:not(:disabled) {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        .good-btn {
+            background-color: #10b981;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+        .good-btn:hover:not(:disabled) {
+            background-color: #059669;
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+        }
+
+        /* 下部ナビゲーション */
         .controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        button {
-            padding: 10px 22px;
-            font-size: 15px;
+        button.nav-btn {
+            padding: 10px 20px;
+            font-size: 14px;
             font-weight: bold;
             border: none;
-            background-color: #007bff;
+            background-color: #3b82f6;
             color: white;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
         }
-        button:hover:not(:disabled) {
-            background-color: #0056b3;
+        button.nav-btn:hover:not(:disabled) {
+            background-color: #2563eb;
         }
         button:disabled {
-            background-color: #e2e8f0;
-            color: #a0aec0;
+            background-color: #f3f4f6 !important;
+            color: #9ca3af !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
             cursor: not-allowed;
         }
-        .progress {
+        .audio-btn {
+            background-color: #ffffff;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 10px 18px;
             font-size: 15px;
+            border-radius: 10px;
+            cursor: pointer;
             font-weight: bold;
-            color: #4a5568;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .audio-btn:hover:not(:disabled) {
+            background-color: #f9fafb;
+            border-color: #9ca3af;
+            color: #111827;
+        }
+        .audio-btn:active:not(:disabled) {
+            background-color: #f3f4f6;
+        }
+        .progress {
+            font-size: 14px;
+            font-weight: bold;
+            color: #6b7280;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div class="top-bar">
+        <span class="app-title"></span>
+        <div class="top-actions">
+            <button class="shuffle-btn" onclick="shuffleCards()">🔀 シャッフル</button>
+            <button class="shuffle-btn" onclick="resetAll()">🔄 最初から</button>
+        </div>
+    </div>
+
+    <!-- 上部プログレスバー -->
+    <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressBarFill"></div>
+    </div>
+
     <div class="card" id="card" onclick="flipCard()">
         <div class="card-type" id="cardType">英語</div>
         <div class="word" id="displayWord"></div>
         <div class="sub-text" id="subText">クリックして日本語訳を表示</div>
     </div>
 
+    <div class="check-buttons">
+        <button class="check-btn bad-btn" onclick="markWord(false)">まだ</button>
+        <button class="check-btn good-btn" onclick="markWord(true)">覚えた</button>
+    </div>
+
     <div class="controls">
-        <button id="prevBtn" onclick="prevWord()">前へ</button>
-        <button id="audioBtn" onclick="playAudio()">🔊 発音</button>
-        <span class="progress" id="progress">1 / 99</span>
-        <button id="nextBtn" onclick="nextWord()">次へ</button>
+        <button class="nav-btn" id="prevBtn" onclick="prevWord()">前へ</button>
+        <button class="audio-btn" id="audioBtn" onclick="playAudio()">🔊 発音</button>
+        <span class="progress" id="progress">1 / 100</span>
+        <button class="nav-btn" id="nextBtn" onclick="nextWord()">次へ</button>
     </div>
 </div>
 
 <script>
-    const wordList = [
-        { en: "form", ja: "組織する、形作る" },
+    const rawWordList = [
+        { en: "form", ja : "組織する、形作る"},
         { en: "cancel", ja: "取り消す、キャンセルする" },
         { en: "relax", ja: "くつろぐ、リラックスする" },
         { en: "add", ja: "加える、追加する" },
@@ -218,11 +366,56 @@
         { en: "originally", ja: "元々は、最初は" }
     ];
 
+    let activeList = [];
     let currentIndex = 0;
     let isShowingJapanese = false;
 
+    function loadProgress() {
+        const savedData = localStorage.getItem('memorise_active_list');
+        const savedIndex = localStorage.getItem('memorise_current_index');
+        
+        if (savedData) {
+            try {
+                activeList = JSON.parse(savedData);
+                if (savedIndex !== null) {
+                    currentIndex = parseInt(savedIndex, 10);
+                }
+                if (currentIndex >= activeList.length && activeList.length > 0) {
+                    currentIndex = activeList.length - 1;
+                }
+            } catch (e) {
+                activeList = [...rawWordList];
+                currentIndex = 0;
+            }
+        } else {
+            activeList = [...rawWordList];
+            currentIndex = 0;
+        }
+    }
+
+    function saveProgress() {
+        localStorage.setItem('memorise_active_list', JSON.stringify(activeList));
+        localStorage.setItem('memorise_current_index', currentIndex.toString());
+    }
+
     function updateCard() {
-        const item = wordList[currentIndex];
+        const cardEl = document.getElementById('card');
+
+        if (activeList.length === 0) {
+            document.getElementById('displayWord').textContent = "🎉 すべて覚えました！";
+            document.getElementById('cardType').textContent = "完了";
+            document.getElementById('subText').textContent = "「最初から」ボタンで復習できます";
+            document.getElementById('progress').textContent = "完了";
+            document.getElementById('progressBarFill').style.width = "100%";
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('audioBtn').disabled = true;
+            cardEl.classList.remove('is-japanese');
+            return;
+        }
+
+        document.getElementById('audioBtn').disabled = false;
+        const item = activeList[currentIndex];
         const displayWordEl = document.getElementById('displayWord');
         const cardTypeEl = document.getElementById('cardType');
         const subTextEl = document.getElementById('subText');
@@ -232,26 +425,52 @@
             displayWordEl.textContent = item.ja;
             displayWordEl.classList.add('translation');
             subTextEl.textContent = "クリックして英単語を表示";
+            cardEl.classList.add('is-japanese');
         } else {
             cardTypeEl.textContent = "英語";
             displayWordEl.textContent = item.en;
             displayWordEl.classList.remove('translation');
             subTextEl.textContent = "クリックして日本語訳を表示";
+            cardEl.classList.remove('is-japanese');
         }
 
-        document.getElementById('progress').textContent = `${currentIndex + 1} / ${wordList.length}`;
+        // プログレス表示とプログレスバーの更新
+        document.getElementById('progress').textContent = `${currentIndex + 1} / ${activeList.length}`;
+        const percentage = ((currentIndex + 1) / activeList.length) * 100;
+        document.getElementById('progressBarFill').style.width = `${percentage}%`;
+
         document.getElementById('prevBtn').disabled = currentIndex === 0;
-        document.getElementById('nextBtn').disabled = currentIndex === wordList.length - 1;
+        document.getElementById('nextBtn').disabled = currentIndex === activeList.length - 1;
+        
+        saveProgress();
     }
 
     function flipCard() {
+        if (activeList.length === 0) return;
         isShowingJapanese = !isShowingJapanese;
+        updateCard();
+    }
+
+    function markWord(isRemembered) {
+        if (activeList.length === 0) return;
+
+        if (isRemembered) {
+            activeList.splice(currentIndex, 1);
+            if (currentIndex >= activeList.length && currentIndex > 0) {
+                currentIndex--;
+            }
+        } else {
+            nextWord();
+        }
+        
+        isShowingJapanese = false;
         updateCard();
     }
 
     function playAudio(event) {
         if (event) event.stopPropagation();
-        const currentItem = wordList[currentIndex];
+        if (activeList.length === 0) return;
+        const currentItem = activeList[currentIndex];
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(currentItem.en);
         utterance.lang = 'en-US';
@@ -259,7 +478,7 @@
     }
 
     function nextWord() {
-        if (currentIndex < wordList.length - 1) {
+        if (currentIndex < activeList.length - 1) {
             currentIndex++;
             isShowingJapanese = false;
             updateCard();
@@ -274,6 +493,25 @@
         }
     }
 
+    function shuffleCards() {
+        for (let i = activeList.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [activeList[i], activeList[j]] = [activeList[j], activeList[i]];
+        }
+        currentIndex = 0;
+        isShowingJapanese = false;
+        updateCard();
+    }
+
+    function resetAll() {
+        localStorage.removeItem('memorise_active_list');
+        localStorage.removeItem('memorise_current_index');
+        activeList = [...rawWordList];
+        currentIndex = 0;
+        isShowingJapanese = false;
+        updateCard();
+    }
+
     document.addEventListener('keydown', function(e) {
         if (e.key === 'ArrowRight') nextWord();
         if (e.key === 'ArrowLeft') prevWord();
@@ -283,6 +521,7 @@
         }
     });
 
+    loadProgress();
     updateCard();
 </script>
 
