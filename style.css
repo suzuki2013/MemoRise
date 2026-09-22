@@ -6,235 +6,213 @@
             padding: 0;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px 20px 80px;
-        }
+       body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background-color: #f8fafc;
+        color: #1e293b;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px 20px 80px;
+    }
 
-        /* 横幅を800pxに拡張したメインコンテナ */
-        .container {
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-            width: 800px;
-            max-width: 95vw;
-            padding: 36px 40px;
-        }
+    /* メインコンテナ */
+    .container {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+        width: 820px;
+        max-width: 95vw;
+        padding: 44px 48px;
+    }
 
-        /* 上部エリア：左にロゴ・右にリスの左右レイアウト */
+    /* 上部エリア：左に大きなロゴ、右にリス */
+    .hero-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 32px;
+        margin-bottom: 36px;
+        padding-bottom: 32px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* 左側：ロゴ・タイトル */
+    .hero-left {
+        flex: 1;
+        text-align: left;
+    }
+
+    .date-badge {
+        display: inline-block;
+        background-color: #eff6ff;
+        color: #2563eb;
+        border-radius: 20px;
+        padding: 6px 18px;
+        font-size: 15px;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    /* 大きく迫力のあるタイトル */
+    .app-title {
+        font-size: 56px;
+        font-weight: 900;
+        color: #2563eb;
+        line-height: 1.1;
+        letter-spacing: -1px;
+        margin-bottom: 12px;
+    }
+
+    .app-subtitle {
+        font-size: 20px;
+        color: #475569;
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    /* 右側：リスと吹き出し */
+    .hero-right {
+        width: 260px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .mascot-avatar {
+        width: 170px;
+        height: 170px;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        margin-bottom: 12px;
+    }
+
+    .mascot-avatar:hover {
+        transform: scale(1.05);
+    }
+
+    .mascot-bubble {
+        background-color: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #334155;
+        line-height: 1.4;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        width: 100%;
+    }
+
+    /* 下部：大きめのメニューボタン */
+    .menu-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 24px 28px;
+        background-color: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 18px;
+        text-decoration: none;
+        color: #1e293b;
+        transition: all 0.2s ease;
+    }
+
+    .menu-item:hover {
+        border-color: #3b82f6;
+        background-color: #f0f7ff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.1);
+    }
+
+    .menu-icon {
+        font-size: 38px;
+        margin-right: 20px;
+    }
+
+    .menu-text {
+        text-align: left;
+        flex-grow: 1;
+    }
+
+    .menu-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .menu-desc {
+        font-size: 14px;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    .menu-arrow {
+        color: #94a3b8;
+        font-size: 22px;
+        font-weight: bold;
+    }
+
+    .menu-item:hover .menu-arrow {
+        color: #2563eb;
+    }
+
+    /* 下部ナビゲーション */
+    .app-switcher {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: #ffffff;
+        border-top: 1px solid #e2e8f0;
+        padding: 12px 0;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        z-index: 1000;
+    }
+
+    .nav-tab {
+        font-size: 14px;
+        font-weight: 700;
+        color: #64748b;
+        text-decoration: none;
+        padding: 8px 20px;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .nav-tab.active {
+        color: #2563eb;
+        background-color: #eff6ff;
+    }
+
+    .nav-tab:hover:not(.active) {
+        color: #1e293b;
+    }
+
+    /* スマホ画面対応 */
+    @media (max-width: 680px) {
         .hero-section {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 32px;
-            margin-bottom: 32px;
-            padding-bottom: 28px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        /* 左側：ロゴ・タイトル・ステータス */
-        .hero-left {
-            flex: 1;
-            text-align: left;
-        }
-
-        .date-badge {
-            display: inline-block;
-            background-color: #eff6ff;
-            color: #2563eb;
-            border-radius: 20px;
-            padding: 4px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .app-title {
-            font-size: 42px;
-            font-weight: 800;
-            color: #2563eb;
-            line-height: 1.1;
-            letter-spacing: -0.5px;
-            margin-bottom: 6px;
-        }
-
-        .app-subtitle {
-            font-size: 15px;
-            color: #64748b;
-            margin-bottom: 20px;
-        }
-
-        /* 今日の学習状況（モチベーション向上用の改善要素） */
-        .status-box {
-            display: flex;
-            gap: 16px;
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 12px 16px;
-        }
-
-        .status-item {
-            flex: 1;
-        }
-
-        .status-label {
-            font-size: 11px;
-            color: #64748b;
-            font-weight: 600;
-        }
-
-        .status-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #0f172a;
-            margin-top: 2px;
-        }
-
-        /* 右側：リスと吹き出し */
-        .hero-right {
-            width: 240px;
-            display: flex;
             flex-direction: column;
-            align-items: center;
             text-align: center;
         }
-
-        .mascot-avatar {
-            width: 150px;
-            height: 150px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            margin-bottom: 8px;
+        .hero-left {
+            text-align: center;
         }
-
-        .mascot-avatar:hover {
-            transform: scale(1.05);
-        }
-
-        .mascot-bubble {
-            background-color: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 10px 14px;
-            font-size: 13px;
-            color: #334155;
-            line-height: 1.4;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-            position: relative;
-            width: 100%;
-        }
-
-        /* 下部：メニュー（横幅を活かして2列レイアウトに変更） */
         .menu-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            grid-template-columns: 1fr;
         }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 20px;
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            text-decoration: none;
-            color: #1e293b;
-            transition: all 0.2s ease;
+        .app-title {
+            font-size: 44px;
         }
-
-        .menu-item:hover {
-            border-color: #3b82f6;
-            background-color: #f0f7ff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
-        }
-
-        .menu-icon {
-            font-size: 32px;
-            margin-right: 16px;
-        }
-
-        .menu-text {
-            text-align: left;
-            flex-grow: 1;
-        }
-
-        .menu-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .menu-desc {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 3px;
-        }
-
-        .menu-arrow {
-            color: #94a3b8;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .menu-item:hover .menu-arrow {
-            color: #2563eb;
-        }
-
-        /* 下部ナビゲーション */
-        .app-switcher {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #ffffff;
-            border-top: 1px solid #e2e8f0;
-            padding: 10px 0;
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            z-index: 1000;
-        }
-
-        .nav-tab {
-            font-size: 13px;
-            font-weight: 600;
-            color: #64748b;
-            text-decoration: none;
-            padding: 8px 18px;
-            border-radius: 12px;
-            transition: all 0.2s ease;
-        }
-
-        .nav-tab.active {
-            color: #2563eb;
-            background-color: #eff6ff;
-        }
-
-        .nav-tab:hover:not(.active) {
-            color: #1e293b;
-        }
-
-        /* モバイル対応（画面が狭いときは1列に戻す） */
-        @media (max-width: 640px) {
-            .hero-section {
-                flex-direction: column;
-                text-align: center;
-            }
-            .hero-left {
-                text-align: center;
-            }
-            .menu-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+    }
