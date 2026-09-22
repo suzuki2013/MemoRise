@@ -16,18 +16,6 @@
             <div class="date-badge" id="currentDate">LOADING...</div>
             <h1 class="app-title">MemoRise</h1>
             <div class="app-subtitle">記憶を定着させるスマート学習アプリ</div>
-
-            <!-- 今日の学習状況 -->
-<div class="status-box">
-    <div class="status-item">
-        <div class="status-label">連続学習</div>
-        <div class="status-value" id="streakValue">🔥 0日目</div>
-    </div>
-    <div class="status-item">
-        <div class="status-label">今日の学習</div>
-        <div class="status-value" id="todayCountValue">📝 0 / 20 語</div>
-    </div>
-</div>
         </div>
 
         <!-- 右側：リスと吹き出し -->
@@ -106,7 +94,7 @@
 
         document.getElementById('currentDate').textContent = `${year}年${month}月${date}日（${day}）`;
     }
-  
+
     // メモリスの台詞切り替え
     const messages = [
         "今日も一緒に学習をはじめよう！",
@@ -121,6 +109,7 @@
         bubble.textContent = randomMsg;
     }
 
+    // 初期化処理
     displayDate();
 </script>
 
