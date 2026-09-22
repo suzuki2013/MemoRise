@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemoRise - ホーム</title>
+    <link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body>
+
+<div class="container">
+    <!-- 上部：左（ロゴ・ステータス） & 右（リス） -->
+    <div class="hero-section">
+        <!-- 左側：ロゴとステータス -->
+        <div class="hero-left">
+            <div class="date-badge" id="currentDate">LOADING...</div>
+            <h1 class="app-title">MemoRise</h1>
+            <div class="app-subtitle">記憶を定着させるスマート学習アプリ</div>
+
+            <!-- 今日の学習状況 -->
+<div class="status-box">
+    <div class="status-item">
+        <div class="status-label">連続学習</div>
+        <div class="status-value" id="streakValue">🔥 0日目</div>
+    </div>
+    <div class="status-item">
+        <div class="status-label">今日の学習</div>
+        <div class="status-value" id="todayCountValue">📝 0 / 20 語</div>
+    </div>
+</div>
+        </div>
+
+        <!-- 右側：リスと吹き出し -->
+        <div class="hero-right">
+            <div class="mascot-avatar" onclick="changeSpeech()">
+                <svg viewBox="0 0 200 200" width="100%" height="100%">
+                    <defs>
+                        <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#fb923c" />
+                            <stop offset="100%" stop-color="#ea580c" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M 110,130 C 150,150 190,120 180,70 C 170,20 120,20 110,50 C 100,70 120,100 110,130 Z" fill="#f97316"/>
+                    <ellipse cx="75" cy="165" rx="14" ry="8" fill="#c2410c"/>
+                    <ellipse cx="125" cy="165" rx="14" ry="8" fill="#c2410c"/>
+                    <ellipse cx="100" cy="130" rx="36" ry="40" fill="url(#bodyGrad)"/>
+                    <ellipse cx="100" cy="132" rx="24" ry="28" fill="#ffedd5"/>
+                    <ellipse cx="65" cy="65" rx="12" ry="22" fill="#fb923c" transform="rotate(-15 65 65)"/>
+                    <ellipse cx="135" cy="65" rx="12" ry="22" fill="#fb923c" transform="rotate(15 135 65)"/>
+                    <circle cx="100" cy="85" r="38" fill="url(#bodyGrad)"/>
+                    <ellipse cx="76" cy="95" rx="16" ry="12" fill="#ffffff"/>
+                    <ellipse cx="124" cy="95" rx="16" ry="12" fill="#ffffff"/>
+                    <circle cx="82" cy="82" r="5" fill="#1e293b"/><circle cx="80" cy="80" r="1.8" fill="#ffffff"/>
+                    <circle cx="118" cy="82" r="5" fill="#1e293b"/><circle cx="116" cy="80" r="1.8" fill="#ffffff"/>
+                    <circle cx="82" cy="83" r="11" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+                    <circle cx="118" cy="83" r="11" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+                    <line x1="93" y1="83" x2="107" y2="83" stroke="#2563eb" stroke-width="2.5"/>
+                    <polygon points="100,90 96,86 104,86" fill="#7c2d12"/>
+                    <path d="M 94,94 Q 100,98 106,94" fill="none" stroke="#7c2d12" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="mascot-bubble" id="mascotBubble">
+                今日も一緒に学習をはじめよう！
+            </div>
+        </div>
+    </div>
+
+    <!-- 下部：2列配置のメニューボタン -->
+    <div class="menu-grid">
+        <a href="flashcard.html" class="menu-item">
+            <div class="menu-icon">📖</div>
+            <div class="menu-text">
+                <div class="menu-title">単語カードで学習</div>
+                <div class="menu-desc">カードをめくって暗記とテスト</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </a>
+
+        <a href="calendar.html" class="menu-item">
+            <div class="menu-icon">📅</div>
+            <div class="menu-text">
+                <div class="menu-title">学習カレンダー</div>
+                <div class="menu-desc">日々の学習記録と達成度を確認</div>
+            </div>
+            <div class="menu-arrow">❯</div>
+        </a>
+    </div>
+</div>
+
+<!-- 画面切替タブ -->
+<div class="app-switcher">
+    <a href="index.html" class="nav-tab active">🏠 ホーム</a>
+    <a href="flashcard.html" class="nav-tab">📖 単語帳</a>
+    <a href="calendar.html" class="nav-tab">📅 カレンダー</a>
+</div>
+
+<script>
+    // 日付の表示
+    function displayDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const date = now.getDate();
+        const dayList = ["日", "月", "火", "水", "木", "金", "土"];
+        const day = dayList[now.getDay()];
+
+        document.getElementById('currentDate').textContent = `${year}年${month}月${date}日（${day}）`;
+    }
+  
+    // メモリスの台詞切り替え
+    const messages = [
+        "今日も一緒に学習をはじめよう！",
+        "1日でも少しずつ進めていこう！",
+        "継続することが一番大事だよ！",
+        "忘れても何度も見直せばOKです！"
+    ];
+
+    function changeSpeech() {
+        const bubble = document.getElementById('mascotBubble');
+        const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+        bubble.textContent = randomMsg;
+    }
+</script>
+
+</body>
+</html>
