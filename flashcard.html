@@ -11,11 +11,16 @@
 <div class="container">
 
     <div class="top-bar">
-        <span class="app-title"></span>
+        <span class="app-title">MemoRise</span>
         <div class="top-actions">
+            <!-- ログインボタンとステータスを追加 -->
+            <button class="shuffle-btn" id="authBtn" onclick="toggleAuth()">🔑 ログイン</button>
             <button class="shuffle-btn" onclick="shuffleCards()">🔀 シャッフル</button>
             <button class="shuffle-btn" onclick="resetAll()">🔄 最初から</button>
         </div>
+    </div>
+    <div id="userStatus" style="font-size: 12px; text-align: right; color: #666; margin-bottom: 5px; padding-right: 10px;">
+        未ログイン（端末保存）
     </div>
 
     <!-- 上部プログレスバー -->
@@ -36,19 +41,41 @@
 
     <div class="controls">
         <button class="nav-btn" id="prevBtn" onclick="prevWord()">前へ</button>
-        <button class="audio-btn" id="audioBtn" onclick="playAudio()">🔊 発音</button>
+        <button class="audio-btn" id="audioBtn" onclick="playAudio(event)">🔊 発音</button>
         <span class="progress" id="progress">1 / 100</span>
         <button class="nav-btn" id="nextBtn" onclick="nextWord()">次へ</button>
     </div>
+
     <!-- 画面最下部に固定配置 -->
-<div class="app-switcher">
-    <a href="index.html" class="nav-tab">🏠 ホーム</a>
-    <a href="flashcard.html" class="nav-tab active">📖 単語帳</a>
-    <a href="calendar.html" class="nav-tab">📅 カレンダー</a>
-</div>
+    <div class="app-switcher">
+        <a href="index.html" class="nav-tab">🏠 ホーム</a>
+        <a href="flashcard.html" class="nav-tab active">📖 単語帳</a>
+        <a href="calendar.html" class="nav-tab">📅 カレンダー</a>
+    </div>
 </div>
 
-<script>
+<!-- module指定でFirebase SDKを使用可能にする -->
+<script type="module">
+    // Firebase SDKの読み込み
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithPopup, signOut, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // 1. Firebase設定（ご自身のコンソールの内容に置き換えてください）
+    const firebaseConfig = {
+  apiKey: "AIzaSyCjrWsYFH1uWPDZR33jd01wIRHLOEgzOSA",
+  authDomain: "flashcrad-29cab.firebaseapp.com",
+  projectId: "flashcrad-29cab",
+  storageBucket: "flashcrad-29cab.firebasestorage.app",
+  messagingSenderId: "736179309620",
+  appId: "1:736179309620:web:311fd7227da1afd61ace61"
+};
+
+    // Firebaseの初期化
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
     const rawWordList = [
         { en: "form", ja : "組織する、形作る"},
         { en: "cancel", ja: "取り消す、キャンセルする" },
@@ -155,17 +182,65 @@
     let activeList = [];
     let currentIndex = 0;
     let isShowingJapanese = false;
+    let currentUser = null;
+    let unsubscribeFirestore = null;
 
-    function loadProgress() {
+    // 2. ログイン／ログアウトの切り替え処理
+    async function toggleAuth() {
+        if (currentUser) {
+            await signOut(auth);
+        } else {
+            const provider = new GoogleAuthProvider();
+            await signInWithPopup(auth, provider);
+        }
+    }
+
+    // 3. ログイン状態の監視と同期制御
+    onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        const authBtn = document.getElementById('authBtn');
+        const userStatus = document.getElementById('userStatus');
+
+        if (unsubscribeFirestore) {
+            unsubscribeFirestore(); // 以前のFirestore監視を解除
+        }
+
+        if (user) {
+            authBtn.textContent = "🚪 ログアウト";
+            userStatus.textContent = `同期中: ${user.displayName || user.email}`;
+
+            const docRef = doc(db, "users", user.uid);
+
+            // リアルタイムでクラウドデータを監視・受動反映
+            unsubscribeFirestore = onSnapshot(docRef, async (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    activeList = data.activeList || [];
+                    currentIndex = data.currentIndex || 0;
+                } else {
+                    // クラウドに初回保存の場合、ローカル保存中の進捗を引き継ぐ
+                    loadLocalProgress();
+                    await saveProgress();
+                }
+                updateCardUI();
+            });
+        } else {
+            authBtn.textContent = "🔑 ログイン";
+            userStatus.textContent = "未ログイン（端末保存）";
+            loadLocalProgress();
+            updateCardUI();
+        }
+    });
+
+    // 4. データ読み出し処理（ローカルストレージ）
+    function loadLocalProgress() {
         const savedData = localStorage.getItem('memorise_active_list');
         const savedIndex = localStorage.getItem('memorise_current_index');
         
         if (savedData) {
             try {
                 activeList = JSON.parse(savedData);
-                if (savedIndex !== null) {
-                    currentIndex = parseInt(savedIndex, 10);
-                }
+                currentIndex = savedIndex !== null ? parseInt(savedIndex, 10) : 0;
                 if (currentIndex >= activeList.length && activeList.length > 0) {
                     currentIndex = activeList.length - 1;
                 }
@@ -179,12 +254,23 @@
         }
     }
 
-    function saveProgress() {
-        localStorage.setItem('memorise_active_list', JSON.stringify(activeList));
-        localStorage.setItem('memorise_current_index', currentIndex.toString());
+    // 5. データ保存処理（ログイン時はFirestore、未ログイン時はlocalStorage）
+    async function saveProgress() {
+        if (currentUser) {
+            const docRef = doc(db, "users", currentUser.uid);
+            await setDoc(docRef, {
+                activeList: activeList,
+                currentIndex: currentIndex,
+                updatedAt: new Date()
+            });
+        } else {
+            localStorage.setItem('memorise_active_list', JSON.stringify(activeList));
+            localStorage.setItem('memorise_current_index', currentIndex.toString());
+        }
     }
 
-    function updateCard() {
+    // UI表示更新関数
+    function updateCardUI() {
         const cardEl = document.getElementById('card');
 
         if (activeList.length === 0) {
@@ -220,24 +306,24 @@
             cardEl.classList.remove('is-japanese');
         }
 
-        // プログレス表示とプログレスバーの更新
         document.getElementById('progress').textContent = `${currentIndex + 1} / ${activeList.length}`;
         const percentage = ((currentIndex + 1) / activeList.length) * 100;
         document.getElementById('progressBarFill').style.width = `${percentage}%`;
 
         document.getElementById('prevBtn').disabled = currentIndex === 0;
         document.getElementById('nextBtn').disabled = currentIndex === activeList.length - 1;
-        
-        saveProgress();
     }
 
-    function flipCard() {
+    // 6. 操作関数群（HTMLのonclickイベントから呼べるようにwindowに登録）
+    window.toggleAuth = toggleAuth;
+
+    window.flipCard = function() {
         if (activeList.length === 0) return;
         isShowingJapanese = !isShowingJapanese;
-        updateCard();
-    }
+        updateCardUI();
+    };
 
-    function markWord(isRemembered) {
+    window.markWord = async function(isRemembered) {
         if (activeList.length === 0) return;
 
         if (isRemembered) {
@@ -246,14 +332,17 @@
                 currentIndex--;
             }
         } else {
-            nextWord();
+            if (currentIndex < activeList.length - 1) {
+                currentIndex++;
+            }
         }
         
         isShowingJapanese = false;
-        updateCard();
-    }
+        await saveProgress();
+        updateCardUI();
+    };
 
-    function playAudio(event) {
+    window.playAudio = function(event) {
         if (event) event.stopPropagation();
         if (activeList.length === 0) return;
         const currentItem = activeList[currentIndex];
@@ -261,54 +350,66 @@
         const utterance = new SpeechSynthesisUtterance(currentItem.en);
         utterance.lang = 'en-US';
         window.speechSynthesis.speak(utterance);
-    }
+    };
 
-    function nextWord() {
+    window.nextWord = async function() {
         if (currentIndex < activeList.length - 1) {
             currentIndex++;
             isShowingJapanese = false;
-            updateCard();
+            await saveProgress();
+            updateCardUI();
         }
-    }
+    };
 
-    function prevWord() {
+    window.prevWord = async function() {
         if (currentIndex > 0) {
             currentIndex--;
             isShowingJapanese = false;
-            updateCard();
+            await saveProgress();
+            updateCardUI();
         }
-    }
+    };
 
-    function shuffleCards() {
+    window.shuffleCards = async function() {
         for (let i = activeList.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [activeList[i], activeList[j]] = [activeList[j], activeList[i]];
         }
         currentIndex = 0;
         isShowingJapanese = false;
-        updateCard();
-    }
+        await saveProgress();
+        updateCardUI();
+    };
 
-    function resetAll() {
+    window.resetAll = async function() {
         localStorage.removeItem('memorise_active_list');
         localStorage.removeItem('memorise_current_index');
+        
         activeList = [...rawWordList];
         currentIndex = 0;
         isShowingJapanese = false;
-        updateCard();
-    }
+
+        if (currentUser) {
+            const docRef = doc(db, "users", currentUser.uid);
+            await deleteDoc(docRef); // クラウド側の保存情報もクリア
+        }
+
+        await saveProgress();
+        updateCardUI();
+    };
 
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'ArrowRight') nextWord();
-        if (e.key === 'ArrowLeft') prevWord();
+        if (e.key === 'ArrowRight') window.nextWord();
+        if (e.key === 'ArrowLeft') window.prevWord();
         if (e.key === ' ') {
             e.preventDefault();
-            flipCard();
+            window.flipCard();
         }
     });
 
-    loadProgress();
-    updateCard();
+    // 初期起動処理
+    loadLocalProgress();
+    updateCardUI();
 </script>
 
 </body>
