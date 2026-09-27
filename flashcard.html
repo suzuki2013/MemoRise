@@ -58,7 +58,7 @@
 <script type="module">
     // Firebase SDKの読み込み
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, signOut, GithubAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // 1. Firebase設定（ご自身のコンソールの内容に置き換えてください）
@@ -188,11 +188,31 @@
     // 2. ログイン／ログアウトの切り替え処理
     async function toggleAuth() {
     if (currentUser) {
+        // ログイン中の場合はログアウト
         await signOut(auth);
     } else {
-        // 【変更後】GithubAuthProviderのインスタンスを作成
-        const provider = new GithubAuthProvider();
-        await signInWithPopup(auth, provider);
+        // 未ログインの場合、メールアドレスとパスワードの入力を求める
+        const email = prompt("メールアドレスを入力してください:");
+        if (!email) return;
+
+        const password = prompt("パスワードを入力してください（6文字以上）:");
+        if (!password) return;
+
+        try {
+            // まずはログインを試みる
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (error) {
+            // アカウントが存在しない・パスワード誤り等の場合、新規作成を促す
+            const createAccount = confirm("ログインできませんでした。このメールアドレスで新規アカウントを作成しますか？");
+            if (createAccount) {
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    alert("アカウントを作成し、ログインしました！");
+                } catch (createError) {
+                    alert("アカウント作成エラー: " + createError.message);
+                }
+            }
+        }
     }
 }
 
