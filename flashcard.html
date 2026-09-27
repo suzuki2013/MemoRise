@@ -5,6 +5,17 @@
     <title>MemoRise - フラッシュカード</title>
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="stylesheet" href="flashcard_css.css" type="text/css">
+
+    <!-- PWA設定 -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo-192.png">
+    <meta name="theme-color" content="#2563eb">
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
 </head>
 <body>
 
