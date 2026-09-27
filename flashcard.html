@@ -58,7 +58,7 @@
 <script type="module">
     // Firebase SDKの読み込み
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, signOut, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, signOut, GithubAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // 1. Firebase設定（ご自身のコンソールの内容に置き換えてください）
@@ -187,13 +187,14 @@
 
     // 2. ログイン／ログアウトの切り替え処理
     async function toggleAuth() {
-        if (currentUser) {
-            await signOut(auth);
-        } else {
-            const provider = new GoogleAuthProvider();
-            await signInWithPopup(auth, provider);
-        }
+    if (currentUser) {
+        await signOut(auth);
+    } else {
+        // 【変更後】GithubAuthProviderのインスタンスを作成
+        const provider = new GithubAuthProvider();
+        await signInWithPopup(auth, provider);
     }
+}
 
     // 3. ログイン状態の監視と同期制御
     onAuthStateChanged(auth, async (user) => {
